@@ -1,0 +1,20 @@
+{
+  "name": "go-offline",
+  "version": "1.0.0",
+  "description": "A cli application for downloading and serving websites on localhost. Of course it is not feasible to reverse-engineer the website's backend logic in an automated fashion so this is good for websites with mostly static content like blogs or documentations.",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/unworthyEnzyme/go-offline.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/unworthyEnzyme/go-offline/issues"
+  },
+  "homepage": "https://github.com/unworthyEnzyme/go-offline#readme"
+}
