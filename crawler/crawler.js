@@ -25,7 +25,7 @@ export default class Crawler {
   async findHyperLinks(page) {
     const hyperlinks = await page.$$eval(
       "a",
-      (as) => as.map((a) => /*TODO: validate these hrefs*/ a.href),
+      (as) => as.map((a) => a.href),
     );
     return hyperlinks.filter((link) => validator.isURL(link));
   }
