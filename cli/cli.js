@@ -16,7 +16,7 @@ program.command("download")
     //TODO: validate url and options
     const crawler = new Crawler();
     await crawler.init();
-    crawler.visit(url);
+    crawler.crawl(url);
   });
 
 export default program;

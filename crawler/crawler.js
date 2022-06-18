@@ -13,12 +13,20 @@ export default class Crawler {
     this.#browser = await puppeteer.launch({ headless: false });
   }
 
-  /**@param {string} url */
-  async visit(url) {
-    const page = await this.#browser.newPage();
+  /**
+   * @param {string} url
+   * @param {import("puppeteer").Page} page
+   */
+  async visit(url, page) {
     await page.goto(url);
     const links = await this.findHyperLinks(page);
     logger({ links });
+  }
+
+  /**@param {string} url */
+  async crawl(url) {
+    const page = await this.#browser.newPage();
+    this.visit(url, page);
   }
 
   /**@param {import("puppeteer").Page} page */
