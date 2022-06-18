@@ -1,5 +1,6 @@
-import { Command } from 'commander';
+import { Command } from "commander";
 const program = new Command();
+import Crawler from "../crawler/crawler.js";
 
 program
   .name("offline-web")
@@ -10,9 +11,12 @@ program.command("download")
   .description("Download website")
   .argument("<url>", "Website's url")
   .option("--depth <integer>", "Number of pages you want to download")
-  .action((url, options) => {
-    //call the download module from here with the options and url
-    console.log({ url, options });
+  .action(async (url, options) => {
+    //TODO: call the download module from here with the options and url
+    //TODO: validate url and options
+    const crawler = new Crawler();
+    await crawler.init();
+    crawler.visit(url);
   });
 
-program.parse();
+export default program;
