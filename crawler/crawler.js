@@ -1,5 +1,7 @@
 import chalk from "chalk";
 import puppeteer from "puppeteer";
+import validator from "validator";
+
 const logger = (...messages) =>
   console.log(chalk.cyanBright("[crawler]"), ...messages);
 
@@ -20,10 +22,11 @@ export default class Crawler {
   }
 
   /**@param {import("puppeteer").Page} page */
-  findHyperLinks(page) {
-    return page.$$eval(
+  async findHyperLinks(page) {
+    const hyperlinks = await page.$$eval(
       "a",
       (as) => as.map((a) => /*TODO: validate these hrefs*/ a.href),
     );
+    return hyperlinks.filter((link) => validator.isURL(link));
   }
 }
