@@ -29,6 +29,13 @@ export default class Crawler {
     this.visit(url, page);
   }
 
+  /**@param {string[]} hyperLinks */
+  filterDifferentHostname(hyperLinks, hostname) {
+    return hyperLinks.filter((hyperLink) =>
+      new URL(hyperLink).hostname === hostname
+    );
+  }
+
   /**@param {import("puppeteer").Page} page */
   async findHyperLinks(page) {
     const hyperlinks = await page.$$eval(
