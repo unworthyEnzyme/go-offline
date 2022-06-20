@@ -20,7 +20,9 @@ export default class Crawler {
    */
   async visit(url, page) {
     await page.goto(url);
-    return await this.findHyperLinks(page);
+    const hyperlinks = await this.findHyperLinks(page);
+    await page.close();
+    return hyperlinks;
   }
 
   /**@param {string} url */
@@ -29,6 +31,12 @@ export default class Crawler {
     let hyperlinks = await this.visit(url, page);
     hyperlinks = this.filterDifferentHostname(hyperlinks, new URL(url).hostname);
     logger({ hyperlinks });
+    const visits = [];
+    for (const hyperlink of hyperlinks) {
+      visits.push(this.visit(hyperlink, await this.#browser.newPage()));
+    }
+    //this is to make sure that we wait for all the visit functions to end before closing the browser.
+    await Promise.all(visits);
     await this.#browser.close();
   }
 
