@@ -8,6 +8,8 @@ const logger = (...messages) =>
 export default class Crawler {
   /** @type {import('puppeteer').Browser} browser */
   #browser;
+  /**@type {Set<string>} */
+  #visitedPages = new Set();
 
   async init() {
     this.#browser = await puppeteer.launch({ headless: false });
@@ -20,6 +22,7 @@ export default class Crawler {
    */
   async visit(url, page) {
     await page.goto(url);
+    this.#visitedPages.add(url);
     const hyperlinks = await this.findHyperLinks(page);
     await page.close();
     return hyperlinks;
@@ -33,10 +36,13 @@ export default class Crawler {
     logger({ hyperlinks });
     const visits = [];
     for (const hyperlink of hyperlinks) {
-      visits.push(this.visit(hyperlink, await this.#browser.newPage()));
+      if (!this.#visitedPages.has(hyperlink)) {
+        visits.push(this.visit(hyperlink, await this.#browser.newPage()));
+      }
     }
     //this is to make sure that we wait for all the visit functions to end before closing the browser.
     await Promise.all(visits);
+    logger(this.#visitedPages);
     await this.#browser.close();
   }
 
