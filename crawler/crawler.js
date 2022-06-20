@@ -51,7 +51,10 @@ export default class Crawler {
     );
   }
 
-  /**@param {import("puppeteer").Page} page */
+  /**
+   * @param {import("puppeteer").Page} page 
+   * @returns {Promise<string[]>} 
+   **/
   async findHyperLinks(page) {
     const hyperlinks = await page.$$eval(
       "a",
