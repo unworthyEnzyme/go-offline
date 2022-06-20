@@ -16,17 +16,20 @@ export default class Crawler {
   /**
    * @param {string} url
    * @param {import("puppeteer").Page} page
+   * @returns {Promise<string[]>}
    */
   async visit(url, page) {
     await page.goto(url);
-    const links = await this.findHyperLinks(page);
-    logger({ links });
+    return await this.findHyperLinks(page);
   }
 
   /**@param {string} url */
   async crawl(url) {
     const page = await this.#browser.newPage();
-    this.visit(url, page);
+    let hyperlinks = await this.visit(url, page);
+    hyperlinks = this.filterDifferentHostname(hyperlinks, new URL(url).hostname);
+    logger({ hyperlinks });
+    await this.#browser.close();
   }
 
   /**
