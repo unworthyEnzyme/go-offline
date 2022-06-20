@@ -29,7 +29,11 @@ export default class Crawler {
     this.visit(url, page);
   }
 
-  /**@param {string[]} hyperLinks */
+  /**
+   * @param {string[]} hyperLinks 
+   * @param {string} hostname
+   * @returns {string[]}
+   */
   filterDifferentHostname(hyperLinks, hostname) {
     return hyperLinks.filter((hyperLink) =>
       new URL(hyperLink).hostname === hostname
