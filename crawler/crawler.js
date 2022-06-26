@@ -74,7 +74,7 @@ export default class Crawler {
     hyperlinks = _.uniq(hyperlinks);
     hyperlinks = this.filterOutHashUrls(hyperlinks);
 
-    let batch = this.#jobQueue.enqueueNJobs(hyperlinks).dequeueNJobs(10);
+    let batch = this.#jobQueue.dequeueNJobs(10);
     while (this.#jobQueue.length > 0) {
       await this.visitNPages(batch);
       batch = this.#jobQueue.dequeueNJobs(10);
