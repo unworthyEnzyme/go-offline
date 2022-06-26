@@ -24,42 +24,76 @@ export default class Crawler {
    * @returns {Promise<string[]>}
    */
   async visit(url, page) {
-    await page.goto(url, { waitUntil: 'networkidle2' });
-    //i am using new URL(url).href because https://example.com/ === https://example.com should be the same.
-    this.#visitedPages.add(new URL(url).href);
-    let hyperlinks = await this.findHyperLinks(page);
-    page.close();
-    console.log(url);
-    hyperlinks = this.filterDifferentHostname(hyperlinks, new URL(url).hostname);
-    hyperlinks = this.filterOutVisitedPages(hyperlinks);
-    hyperlinks = _.uniq(hyperlinks);
-    this.#jobQueue.enqueueNJobs(hyperlinks);
-    this.#jobQueue.done(url);
-    return hyperlinks;
+    try {
+      await page.goto(url);
+      //i am using new URL(url).href because https://example.com/ === https://example.com should be the same.
+      this.#visitedPages.add(new URL(url).href);
+      let hyperlinks = await this.findHyperLinks(page);
+
+      //filter out these links.
+      hyperlinks = this.filterDifferentHostname(hyperlinks, new URL(url).hostname);
+      hyperlinks = this.filterOutVisitedPages(hyperlinks);
+      hyperlinks = _.uniq(hyperlinks);
+      hyperlinks = this.filterOutHashUrls(hyperlinks);
+
+      console.log(url);
+
+      this.#jobQueue.enqueueNJobs(hyperlinks);
+      await page.close();
+      return hyperlinks;
+    } catch (err) {
+      // await page.waitForNavigation();
+      //there is probably a navigation
+      //i am using new URL(url).href because https://example.com/ === https://example.com should be the same.
+      this.#visitedPages.add(new URL(url).href);
+      let hyperlinks = await this.findHyperLinks(page);
+
+      //filter out these links.
+      hyperlinks = this.filterDifferentHostname(hyperlinks, new URL(url).hostname);
+      hyperlinks = this.filterOutVisitedPages(hyperlinks);
+      hyperlinks = _.uniq(hyperlinks);
+      hyperlinks = this.filterOutHashUrls(hyperlinks);
+
+      console.log(url);
+
+      this.#jobQueue.enqueueNJobs(hyperlinks);
+      await page.close();
+      return hyperlinks;
+    }
   }
 
   /**@param {string} url */
   async crawl(url) {
     const page = await this.#browser.newPage();
 
-
-    this.#jobQueue.emitter.on('done', async () => {
-      const job = this.#jobQueue.dequeue();
-      if (job && !this.#visitedPages.has(job)) this.visit(job, await this.#browser.newPage());
-    });
-
     let hyperlinks = await this.visit(url, page);
+
+    //filter out these links.
     hyperlinks = this.filterDifferentHostname(hyperlinks, new URL(url).hostname);
     hyperlinks = this.filterOutVisitedPages(hyperlinks);
     hyperlinks = _.uniq(hyperlinks);
+    hyperlinks = this.filterOutHashUrls(hyperlinks);
 
-    const firstBatch = this.#jobQueue.enqueueNJobs(hyperlinks).dequeueNJobs(10);
+    let batch = this.#jobQueue.enqueueNJobs(hyperlinks).dequeueNJobs(10);
+    while (this.#jobQueue.length > 0) {
+      await this.visitNPages(batch);
+      batch = this.#jobQueue.dequeueNJobs(10);
+    }
+    await this.#browser.close();
+  }
 
-    for (const hyperlink of firstBatch) {
+  /**
+   * @param {string[]} hyperlinks
+   */
+  async visitNPages(hyperlinks) {
+    const visits = [];
+    for (const hyperlink of hyperlinks) {
       if (!this.#visitedPages.has(hyperlink)) {
-        this.visit(hyperlink, await this.#browser.newPage());
+        visits.push(this.visit(hyperlink, await this.#browser.newPage()));
       }
     }
+    const newLinks = await Promise.all(visits);
+    return newLinks.flat(1);
   }
 
   /**
@@ -92,22 +126,18 @@ export default class Crawler {
     );
     return hyperlinks.filter((link) => validator.isURL(link));
   }
+
+  /**
+   * @param {string[]} urls
+   */
+  filterOutHashUrls(urls) {
+    return urls.filter((url) => (new URL(url).hash === '') && (new URL(url).href.indexOf('#') === -1));
+  }
 }
 
 class JobQueue {
   constructor() {
     this.jobs = [];
-    this.currentProcessingJobs = new Set();
-    this.emitter = new EventEmitter();
-  }
-
-  log() {
-    console.log({ jobs: this.jobs.length, processing: this.currentProcessingJobs });
-  }
-
-  done(ID) {
-    this.currentProcessingJobs.delete(ID);
-    this.emitter.emit('done');
   }
 
   enqueue(job) {
@@ -121,7 +151,6 @@ class JobQueue {
 
   dequeue() {
     const ID = this.jobs.shift();
-    this.currentProcessingJobs.add(ID);
     return ID;
   }
 
