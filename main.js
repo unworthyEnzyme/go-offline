@@ -1,1 +1,7 @@
-console.log("hello world");
+import program from "./cli/cli.js";
+
+async function main() {
+  program.parse();
+}
+
+main();
