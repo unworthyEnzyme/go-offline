@@ -1,11 +1,7 @@
-import chalk from "chalk";
 import puppeteer from "puppeteer";
 import validator from "validator";
 import EventEmitter from 'node:events';
 import _ from 'lodash';
-
-const logger = (...messages) =>
-  console.log(chalk.cyanBright("[crawler]"), ...messages);
 
 export default class Crawler {
   /** @type {import('puppeteer').Browser} browser */
