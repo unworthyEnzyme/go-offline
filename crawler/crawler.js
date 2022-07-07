@@ -1,6 +1,5 @@
 import puppeteer from "puppeteer";
 import validator from "validator";
-import EventEmitter from 'node:events';
 import _ from 'lodash';
 
 export default class Crawler {
