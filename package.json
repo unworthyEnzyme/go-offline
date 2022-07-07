@@ -21,6 +21,7 @@
   "dependencies": {
     "commander": "^9.3.0",
     "lodash": "^4.17.21",
+    "puppeteer": "^15.3.1",
     "validator": "^13.7.0"
   }
 }
