@@ -31,10 +31,7 @@ export default class Crawler {
       let hyperlinks = await this.findHyperLinks(page);
 
       //filter out these links.
-      hyperlinks = this.filterDifferentHostname(hyperlinks, new URL(url).hostname);
-      hyperlinks = this.filterOutVisitedPages(hyperlinks);
-      hyperlinks = _.uniq(hyperlinks);
-      hyperlinks = this.filterOutHashUrls(hyperlinks);
+      hyperlinks = this.filterHyperlinks(hyperlinks, url);
 
       console.log(url);
 
@@ -49,10 +46,7 @@ export default class Crawler {
       let hyperlinks = await this.findHyperLinks(page);
 
       //filter out these links.
-      hyperlinks = this.filterDifferentHostname(hyperlinks, new URL(url).hostname);
-      hyperlinks = this.filterOutVisitedPages(hyperlinks);
-      hyperlinks = _.uniq(hyperlinks);
-      hyperlinks = this.filterOutHashUrls(hyperlinks);
+      hyperlinks = this.filterHyperlinks(hyperlinks, url);
 
       console.log(url);
 
@@ -69,10 +63,7 @@ export default class Crawler {
     let hyperlinks = await this.visit(url, page);
 
     //filter out these links.
-    hyperlinks = this.filterDifferentHostname(hyperlinks, new URL(url).hostname);
-    hyperlinks = this.filterOutVisitedPages(hyperlinks);
-    hyperlinks = _.uniq(hyperlinks);
-    hyperlinks = this.filterOutHashUrls(hyperlinks);
+    hyperlinks = this.filterHyperlinks(hyperlinks, url);
 
     let batch = this.#jobQueue.dequeueNJobs(10);
     do {
@@ -80,6 +71,14 @@ export default class Crawler {
       batch = this.#jobQueue.dequeueNJobs(10);
     } while (this.#jobQueue.length > 0);
     await this.#browser.close();
+  }
+
+  filterHyperlinks(hyperlinks, url) {
+    hyperlinks = this.filterDifferentHostname(hyperlinks, new URL(url).hostname);
+    hyperlinks = this.filterOutVisitedPages(hyperlinks);
+    hyperlinks = _.uniq(hyperlinks);
+    hyperlinks = this.filterOutHashUrls(hyperlinks);
+    return hyperlinks;
   }
 
   /**
