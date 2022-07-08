@@ -1,6 +1,7 @@
 import puppeteer from "puppeteer";
 import validator from "validator";
 import _ from 'lodash';
+import fs from 'fs/promises';
 
 export default class Crawler {
   /** @type {import('puppeteer').Browser} browser */
@@ -19,36 +20,19 @@ export default class Crawler {
    * @returns {Promise<string[]>}
    */
   async visit(url, page) {
-    try {
-      await page.goto(url);
-      //i am using new URL(url).href because https://example.com/ === https://example.com should be the same.
-      this.#visitedPages.add(new URL(url).href);
-      let hyperlinks = await this.findHyperLinks(page);
+    await page.goto(url);
+    await page.waitForSelector('a');
+    //i am using new URL(url).href because https://example.com/ === https://example.com should be the same.
+    this.#visitedPages.add(new URL(url).href);
+    let hyperlinks = await this.findHyperLinks(page);
 
-      //filter out these links.
-      hyperlinks = this.filterHyperlinks(hyperlinks, url);
+    //filter out these links.
+    hyperlinks = this.filterHyperlinks(hyperlinks, url);
 
-      console.log(url);
-
-      this.#jobQueue.enqueueNJobs(hyperlinks);
-      await page.close();
-      return hyperlinks;
-    } catch (err) {
-      // await page.waitForNavigation();
-      //there is probably a navigation
-      //i am using new URL(url).href because https://example.com/ === https://example.com should be the same.
-      this.#visitedPages.add(new URL(url).href);
-      let hyperlinks = await this.findHyperLinks(page);
-
-      //filter out these links.
-      hyperlinks = this.filterHyperlinks(hyperlinks, url);
-
-      console.log(url);
-
-      this.#jobQueue.enqueueNJobs(hyperlinks);
-      await page.close();
-      return hyperlinks;
-    }
+    this.#jobQueue.enqueueNJobs(hyperlinks);
+    await page.close();
+    await fs.appendFile('third-run.txt', `${url}\n`);
+    return hyperlinks;
   }
 
   /**@param {string} url */
@@ -64,6 +48,10 @@ export default class Crawler {
     do {
       await this.visitNPages(batch);
       batch = this.#jobQueue.dequeueNJobs(10);
+      console.log({
+        queueLen: this.#jobQueue.length,
+        visitedSetSize: this.#visitedPages.size
+      });
     } while (this.#jobQueue.length > 0);
     await this.#browser.close();
   }
