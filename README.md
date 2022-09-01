@@ -1,2 +1,4 @@
 # go-offline
 A cli application for downloading and serving websites on localhost. Of course it is not feasible to reverse-engineer the website's backend logic in an automated fashion so this is good for websites with mostly static content like blogs or documentations.
+## Status
+I manage to implement a parallelized crawler and we can configure the number of concurrent tabs open. But there is a big problem, the current `visit` function waits for the anchor elements to continue its process, the problem with that is not every hyperlink goes to an html page. Some of the hyperlinks are goes to file download, images, videos or a some form of xml(🤨). And the problems doesn't end here, redirects, insecure pages, content heavy pages that takes forever to load(puppeteer timeouts and throws an exception in this case).
