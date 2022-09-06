@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "A cli application for downloading and serving websites on localhost. Of course it is not feasible to reverse-engineer the website's backend logic in an automated fashion so this is good for websites with mostly static content like blogs or documentations.",
   "main": "main.js",
-  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -23,5 +22,11 @@
     "lodash": "^4.17.21",
     "puppeteer": "^15.3.1",
     "validator": "^13.7.0"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.14.184",
+    "@types/node": "^18.7.15",
+    "@types/validator": "^13.7.6",
+    "typescript": "^4.8.2"
   }
 }
