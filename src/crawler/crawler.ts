@@ -3,22 +3,15 @@ import puppeteer from "puppeteer";
 import validator from "validator";
 
 export default class Crawler {
-  /** @type {import('puppeteer').Browser} browser */
-  #browser;
-  /**@type {Set<string>} */
-  #visitedPages = new Set();
+  #browser: puppeteer.Browser;
+  #visitedPages: Set<string> = new Set();
   #jobQueue = new JobQueue();
 
   async init() {
     this.#browser = await puppeteer.launch({ headless: false });
   }
 
-  /**
-   * @param {string} url
-   * @param {import("puppeteer").Page} page
-   * @returns {Promise<string[]>}
-   */
-  async visit(url, page) {
+  async visit(url: string, page: puppeteer.Page) {
     await page.goto(url);
     await page.waitForSelector("a");
     //i am using new URL(url).href because https://example.com/ === https://example.com should be the same.
@@ -33,8 +26,7 @@ export default class Crawler {
     return hyperlinks;
   }
 
-  /**@param {string} url */
-  async crawl(url) {
+  async crawl(url: string) {
     const page = await this.#browser.newPage();
 
     let hyperlinks = await this.visit(url, page);
@@ -54,10 +46,10 @@ export default class Crawler {
     await this.#browser.close();
   }
 
-  filterHyperlinks(hyperlinks, url) {
+  filterHyperlinks(hyperlinks: string[], url: string) {
     hyperlinks = this.filterDifferentHostname(
       hyperlinks,
-      new URL(url).hostname,
+      new URL(url).hostname
     );
     hyperlinks = this.filterOutVisitedPages(hyperlinks);
     hyperlinks = _.uniq(hyperlinks);
@@ -65,10 +57,7 @@ export default class Crawler {
     return hyperlinks;
   }
 
-  /**
-   * @param {string[]} hyperlinks
-   */
-  async visitNPages(hyperlinks) {
+  async visitNPages(hyperlinks: string[]) {
     const visits = [];
     for (const hyperlink of hyperlinks) {
       if (!this.#visitedPages.has(hyperlink)) {
@@ -79,59 +68,41 @@ export default class Crawler {
     return newLinks.flat(1);
   }
 
-  /**
-   * @param {string[]} hyperLinks
-   * @param {string} hostname
-   * @returns {string[]}
-   */
-  filterDifferentHostname(hyperLinks, hostname) {
-    return hyperLinks.filter((hyperLink) =>
-      new URL(hyperLink).hostname === hostname
+  filterDifferentHostname(hyperLinks: string[], hostname: string) {
+    return hyperLinks.filter(
+      (hyperLink) => new URL(hyperLink).hostname === hostname
     );
   }
 
-  /**
-   * @param {string[]} hyperlinks
-   * @returns {string[]}
-   */
-  filterOutVisitedPages(hyperlinks) {
-    return hyperlinks.filter((hyperlink) =>
-      !this.#visitedPages.has(new URL(hyperlink).href)
+  filterOutVisitedPages(hyperlinks: string[]) {
+    return hyperlinks.filter(
+      (hyperlink) => !this.#visitedPages.has(new URL(hyperlink).href)
     );
   }
 
-  /**
-   * @param {import("puppeteer").Page} page
-   * @returns {Promise<string[]>}
-   */
-  async findHyperLinks(page) {
-    const hyperlinks = await page.$$eval(
-      "a",
-      (as) => as.map((a) => a.href),
-    );
+  async findHyperLinks(page: puppeteer.Page) {
+    const hyperlinks = await page.$$eval("a", (as) => as.map((a) => a.href));
     return hyperlinks.filter((link) => validator.isURL(link));
   }
 
-  /**
-   * @param {string[]} urls
-   */
-  filterOutHashUrls(urls) {
-    return urls.filter((url) =>
-      (new URL(url).hash === "") && (new URL(url).href.indexOf("#") === -1)
+  filterOutHashUrls(urls: string[]) {
+    return urls.filter(
+      (url) => new URL(url).hash === "" && new URL(url).href.indexOf("#") === -1
     );
   }
 }
 
 class JobQueue {
+  jobs: string[];
   constructor() {
     this.jobs = [];
   }
 
-  enqueue(job) {
+  enqueue(job: string) {
     this.jobs.push(job);
   }
 
-  enqueueNJobs(jobs) {
+  enqueueNJobs(jobs: string[]) {
     this.jobs.push(...jobs);
     return this;
   }
@@ -141,7 +112,7 @@ class JobQueue {
     return ID;
   }
 
-  dequeueNJobs(n) {
+  dequeueNJobs(n: number) {
     return this.jobs.splice(0, n);
   }
 
