@@ -1,7 +1,6 @@
+import _ from "lodash";
 import puppeteer from "puppeteer";
 import validator from "validator";
-import _ from "lodash";
-import fs from "fs/promises";
 
 export default class Crawler {
   /** @type {import('puppeteer').Browser} browser */
@@ -31,7 +30,6 @@ export default class Crawler {
 
     this.#jobQueue.enqueueNJobs(hyperlinks);
     await page.close();
-    await fs.appendFile("third-run.txt", `${url}\n`);
     return hyperlinks;
   }
 
