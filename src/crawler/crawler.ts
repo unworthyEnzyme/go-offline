@@ -1,6 +1,7 @@
 import _ from "lodash";
 import puppeteer from "puppeteer";
 import validator from "validator";
+import { JobQueue } from "./JobQueue";
 
 export default class Crawler {
   #browser: puppeteer.Browser;
@@ -89,38 +90,5 @@ export default class Crawler {
     return urls.filter(
       (url) => new URL(url).hash === "" && new URL(url).href.indexOf("#") === -1
     );
-  }
-}
-
-class JobQueue {
-  jobs: string[];
-  constructor() {
-    this.jobs = [];
-  }
-
-  enqueue(job: string) {
-    this.jobs.push(job);
-  }
-
-  enqueueNJobs(jobs: string[]) {
-    this.jobs.push(...jobs);
-    return this;
-  }
-
-  dequeue() {
-    const ID = this.jobs.shift();
-    return ID;
-  }
-
-  dequeueNJobs(n: number) {
-    return this.jobs.splice(0, n);
-  }
-
-  get length() {
-    return this.jobs.length;
-  }
-
-  get isEmpty() {
-    return this.length === 0;
   }
 }
